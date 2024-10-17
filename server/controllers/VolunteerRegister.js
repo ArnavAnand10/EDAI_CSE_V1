@@ -2,11 +2,16 @@ const VolunteerModel = require('../Models/VolunteerModel');
 
 // Register controller
 const registerVolunteer = async (req, res) => {
+
+
+    console.log("Voluntter");
+    
+
     try {
-        const { name, email, password, phone, location, preferences, availability } = req.body;
+        const {  fullName, email, password, phone, location, preferences, availability } = req.body;
 
         // Check if all required fields are provided
-        if (!name || !email || !password || !phone) {
+        if (!fullName || !email || !password || !phone) {
             return res.status(400).json({ error: 'Name, email, password, and phone are required' });
         }
 
@@ -17,7 +22,7 @@ const registerVolunteer = async (req, res) => {
 
 
         const newVolunteer = new VolunteerModel({
-            name,
+            name: fullName,
             email,
             password, 
             phone,

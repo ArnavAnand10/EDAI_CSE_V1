@@ -9,6 +9,8 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import url from '../../apiConfig';
+import VictimHeader from './VictimHeader';
+import { useNavigate } from 'react-router';
 
 
 
@@ -102,6 +104,8 @@ function RequestHelp() {
       }
     };
     return (
+      <>
+    
       <div className='bg-white rounded-lg shadow-lg p-4 mx-8'>
         <TextField
           label="Describe Your Problem"
@@ -158,6 +162,7 @@ function RequestHelp() {
           Next: Select Location
         </Button>
       </div>
+      </>
     );
   };
 
@@ -165,7 +170,7 @@ function RequestHelp() {
   const PreviewPublish = () => {
 
     const { description, setDescription, location, setLocation, categories, setCategories, severity, setSeverity, urgency, setUrgency } = useRequest();
-
+    const navigate = useNavigate()
     const email = localStorage.getItem("victimLoginEmail");
     const getUrgencyClass = (urgency) => {
       switch (urgency) {
@@ -198,7 +203,8 @@ function RequestHelp() {
             imageUrl : imageUrl,
             email
         })
-        window.alert("Post Published Successfully")
+        window.alert("Post Published Successfully");
+        navigate("/victim-requests")
       }catch(e){
         console.log(e);
         window.alert("Internal Server Error")
@@ -499,6 +505,9 @@ function RequestHelp() {
 
 
     }}>
+
+<VictimHeader/>
+
       <div className='flex flex-col w-full gap-10 p-12'>
         <h1 className='text-white text-4xl mx-10 font-medium'>Request for Help</h1>
 

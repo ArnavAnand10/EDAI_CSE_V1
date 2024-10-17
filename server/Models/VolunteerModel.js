@@ -6,8 +6,7 @@ const volunteerSchema = new mongoose.Schema({
   password : {type:String, required: true},
   phone: { type: String, required: true },
   location: {
-    type: { type: String, default: 'Point' },
-    coordinates: { type: [Number], index: '2dsphere' }
+    type: [Number],
   },
   preferences: {
     categories: [{ type: String }],
