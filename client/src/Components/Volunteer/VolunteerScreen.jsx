@@ -11,6 +11,7 @@ import axios from 'axios';
 import url from '../../apiConfig';
 import { useState } from 'react';
 import PostsCards from './PostsCards';
+import { useNavigate } from 'react-router';
 
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -18,22 +19,29 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   console.log(lat1, lon1, lat2, lon2);
   
 
-  const toRadians = (degrees) => (degrees * Math.PI) / 180;
-
-  const R = 6371; // Radius of the Earth in kilometers
-  const dLat = toRadians(lat2 - lat1);
-  const dLon = toRadians(lon2 - lon1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  const distance = R * c; // Distance in kilometers
-  return distance.toFixed(2);  // Distance in kilometers
+ // The math module contains a function
+        // named toRadians which converts from
+        // degrees to radians.
+        lon1 =  lon1 * Math.PI / 180;
+        lon2 = lon2 * Math.PI / 180;
+        lat1 = lat1 * Math.PI / 180;
+        lat2 = lat2 * Math.PI / 180;
+   
+        // Haversine formula 
+        let dlon = lon2 - lon1; 
+        let dlat = lat2 - lat1;
+        let a = Math.pow(Math.sin(dlat / 2), 2)
+                 + Math.cos(lat1) * Math.cos(lat2)
+                 * Math.pow(Math.sin(dlon / 2),2);
+               
+        let c = 2 * Math.asin(Math.sqrt(a));
+   
+        // Radius of earth in kilometers. Use 3956 
+        // for miles
+        let r = 6371;
+   
+        // calculate the result
+        return(c * r).toFixed(2);  // Distance in kilometers
 };
 
 
@@ -42,9 +50,16 @@ const VolunteerScreen = () => {
 
   const [allPosts, setAllPosts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
+  const navigate = useNavigate();
 
   const [postLoading, setPostLoading] = useState(false);
   useEffect(() => {
+
+
+    if(!localStorage.getItem("volunteerLoginEmail")){
+      navigate("/volunteer-login");
+    }
+
     const fetchUserLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -171,6 +186,10 @@ const VolunteerScreen = () => {
           </Button>
 
           <Button
+          onClick={()=>{
+            localStorage.removeItem("volunteerLoginEmail");
+            navigate("/volunteer-login")
+          }}
             fullWidth
             size='small'
             variant="outlined"
@@ -224,7 +243,7 @@ const VolunteerScreen = () => {
                 <tr className="border-b border-gray-200">
                   <td className="p-2">1</td>
                   <td className="p-2">Ridham</td>
-                  <td className="p-2">5</td>
+                  <td className="p-2">15</td>
                 </tr>
                 <tr className="border-b border-gray-200">
                   <td className="p-2">2</td>
@@ -269,13 +288,14 @@ const VolunteerScreen = () => {
        { postLoading ? <CircularProgress/> :  <div className="posts-area flex-grow p-3 basis-full flex-col rounded-md overflow-y-scroll space-y-5    scrollbar-hide">
 
           {/* Post Component */}
-          {allPosts && allPosts.map((post) => {
+          {allPosts && userLocation && allPosts.map((post) => {
 
             post.distance = calculateDistance(userLocation.latitude,userLocation.longitude,post.geoLocation[0],post.geoLocation[1])
 
             return (
               <PostsCards props={post} />)
           })}
+          
 
         </div> }
 

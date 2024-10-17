@@ -3,10 +3,10 @@ const VictimModel = require('../Models/VictimModel');
 // Register controller
 const registerVictim = async (req, res) => {
     try {
-        const { name, email, password, phone } = req.body;
+        const { fullName, email, password, phone } = req.body;
         console.log(req.body)
 
-        if (!name || !email || !password || !phone) {
+        if (!fullName || !email || !password || !phone) {
             return res.status(400).json({ error: 'Name, email, password, and phone are required' });
         }
 
@@ -14,9 +14,13 @@ const registerVictim = async (req, res) => {
         if (existingVictim) {
             return res.status(400).json({ error: 'Email is already registered' });
         }
+        const existingVictimPhone = await VictimModel.findOne({ phone });
+        if (existingVictimPhone) {
+            return res.status(400).json({ error: 'Phone Number is already registered' });
+        }
 
         const newVictim = new VictimModel({
-            name,
+            fullName,
             email,
             password, 
             phone,
@@ -32,7 +36,7 @@ const registerVictim = async (req, res) => {
                 name: newVictim.name,
                 email: newVictim.email,
                 phone: newVictim.phone,
-                location: newVictim.location
+            
             }
         });
     } catch (error) {
