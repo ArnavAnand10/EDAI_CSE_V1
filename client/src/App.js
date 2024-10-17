@@ -8,13 +8,15 @@ import VictimLogin from "./Components/Victim/VictimLogin";
 import AllRequests from "./Components/Victim/AllRequests";
 import VolunteerRegister from "./Components/Volunteer/VolunteerRegister";
 import VolunteerLogin from "./Components/Volunteer/VolunteerLogin";
+import Home from "./Components/Home/Home";
 
 function App() {
   return (
     <div>
       <Routes>
-      
-        <Route element={<VictimRegister/> } path = "/victim-register"/>
+        <Route element={<Home />} path="/" />
+
+        <Route element={<VictimRegister />} path="/victim-register" />
         <Route element={<VictimLogin />} path="/victim-login" />
         <Route element={<VolunteerScreen />} path="/volunteer" />
         <Route element={<AllRequests />} path="/victim-requests" />
