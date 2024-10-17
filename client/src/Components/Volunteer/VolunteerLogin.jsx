@@ -91,7 +91,7 @@ const VolunteerLogin = () => {
   };
 
   useEffect(() => {
-    if (localStorage.getItem("volunteeroginEmail")) {
+    if (localStorage.getItem("volunteerLoginEmail")) {
       navigate("/volunteer");
     }
   }, [navigate]);
