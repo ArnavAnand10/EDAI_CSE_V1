@@ -8,6 +8,7 @@ const Victim = require("../Models/VictimModel");
 const publishPost = require("../controllers/publishPost");
 const getPosts = require("../controllers/getPosts");
 const getVictimPostsForHistory = require("../controllers/getVictimPostsForHistory");
+const closeProblem = require("../controllers/deleteVictimPost");
 dotenv.config();
 
 router.post("/gemini-model", async (req, res) => {
@@ -81,4 +82,5 @@ router.post("/gemini-model", async (req, res) => {
 router.post("/publish-post", publishPost);
 router.get("/get-posts",getPosts);
 router.get("/get-victim-history",getVictimPostsForHistory)
+router.post("/close-problem",closeProblem)
 module.exports = router;

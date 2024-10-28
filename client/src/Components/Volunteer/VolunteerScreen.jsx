@@ -1,15 +1,14 @@
 
 import Avatar from '@mui/material/Avatar'
 import '../../App.css';
-import { Button, CircularProgress, IconButton, Input } from '@mui/material';
+import { Button, CircularProgress, IconButton, Input, InputLabel, MenuItem, Select } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
 import PhoneEnabledIcon from '@mui/icons-material/PhoneEnabled';
-import { useDebugValue, useEffect } from 'react';
 import axios from 'axios';
 import url from '../../apiConfig';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PostsCards from './PostsCards';
 import { useNavigate } from 'react-router';
 
@@ -17,31 +16,31 @@ import { useNavigate } from 'react-router';
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
   console.log(lat1, lon1, lat2, lon2);
-  
 
- // The math module contains a function
-        // named toRadians which converts from
-        // degrees to radians.
-        lon1 =  lon1 * Math.PI / 180;
-        lon2 = lon2 * Math.PI / 180;
-        lat1 = lat1 * Math.PI / 180;
-        lat2 = lat2 * Math.PI / 180;
-   
-        // Haversine formula 
-        let dlon = lon2 - lon1; 
-        let dlat = lat2 - lat1;
-        let a = Math.pow(Math.sin(dlat / 2), 2)
-                 + Math.cos(lat1) * Math.cos(lat2)
-                 * Math.pow(Math.sin(dlon / 2),2);
-               
-        let c = 2 * Math.asin(Math.sqrt(a));
-   
-        // Radius of earth in kilometers. Use 3956 
-        // for miles
-        let r = 6371;
-   
-        // calculate the result
-        return(c * r).toFixed(2);  // Distance in kilometers
+
+  // The math module contains a function
+  // named toRadians which converts from
+  // degrees to radians.
+  lon1 = lon1 * Math.PI / 180;
+  lon2 = lon2 * Math.PI / 180;
+  lat1 = lat1 * Math.PI / 180;
+  lat2 = lat2 * Math.PI / 180;
+
+  // Haversine formula 
+  let dlon = lon2 - lon1;
+  let dlat = lat2 - lat1;
+  let a = Math.pow(Math.sin(dlat / 2), 2)
+    + Math.cos(lat1) * Math.cos(lat2)
+    * Math.pow(Math.sin(dlon / 2), 2);
+
+  let c = 2 * Math.asin(Math.sqrt(a));
+
+  // Radius of earth in kilometers. Use 3956 
+  // for miles
+  let r = 6371;
+
+  // calculate the result
+  return (c * r).toFixed(2);  // Distance in kilometers
 };
 
 
@@ -56,7 +55,7 @@ const VolunteerScreen = () => {
   useEffect(() => {
 
 
-    if(!localStorage.getItem("volunteerLoginEmail")){
+    if (!localStorage.getItem("volunteerLoginEmail")) {
       navigate("/volunteer-login");
     }
 
@@ -99,12 +98,12 @@ const VolunteerScreen = () => {
       }
       catch (e) {
         console.log('error in fetching all posts', e);
-      }finally{
+      } finally {
         setPostLoading(false);
       }
     }
     fetchAllPosts();
-   
+
   }, [])
 
   return <div
@@ -186,10 +185,10 @@ const VolunteerScreen = () => {
           </Button>
 
           <Button
-          onClick={()=>{
-            localStorage.removeItem("volunteerLoginEmail");
-            navigate("/volunteer-login")
-          }}
+            onClick={() => {
+              localStorage.removeItem("volunteerLoginEmail");
+              navigate("/volunteer-login")
+            }}
             fullWidth
             size='small'
             variant="outlined"
@@ -282,22 +281,53 @@ const VolunteerScreen = () => {
           boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
         }} className="disaster-news-component border border-gray-300 ml-2 mr-2 -mb-4 basis-1/4  bg-white rounded-md">
 
+
+          <div className='flex flex-row gap-5 justify-around p-5'>
+
+
+            <div className='flex gap-3 flex-col'>
+              <p className='text-lg font-medium'>
+                Sort By Urgency
+              </p>
+              <Select
+                label="Urgency"
+               
+              >
+                <MenuItem value={"high-to-low"}>High To Low</MenuItem>
+                <MenuItem value={"low-to-high"}>Low To High</MenuItem>
+              </Select>
+            </div>
+            <p className='text-lg font-medium'>
+              Sort By Severity
+            </p>
+
+
+            <p className='text-lg font-medium'>
+              Sort By Distance
+            </p>
+
+            <p className='text-lg font-medium'>
+              Select Categories
+            </p>
+
+
+          </div>
         </div>
 
         {/* Scrollable Posts Component */}
-       { postLoading ? <CircularProgress/> :  <div className="posts-area flex-grow p-3 basis-full flex-col rounded-md overflow-y-scroll space-y-5    scrollbar-hide">
+        {postLoading ? <CircularProgress /> : <div className="posts-area flex-grow p-3 basis-full flex-col rounded-md overflow-y-scroll space-y-5    scrollbar-hide">
 
           {/* Post Component */}
           {allPosts && userLocation && allPosts.map((post) => {
 
-            post.distance = calculateDistance(userLocation.latitude,userLocation.longitude,post.geoLocation[0],post.geoLocation[1])
+            post.distance = calculateDistance(userLocation.latitude, userLocation.longitude, post.geoLocation[0], post.geoLocation[1])
 
             return (
               <PostsCards props={post} />)
           })}
-          
 
-        </div> }
+
+        </div>}
 
       </div>
 

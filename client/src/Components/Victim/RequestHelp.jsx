@@ -168,6 +168,7 @@ function RequestHelp() {
 
 
   const PreviewPublish = () => {
+    const [isloading, setIsLoading] = useState(false);
 
     const { description, setDescription, location, setLocation, categories, setCategories, severity, setSeverity, urgency, setUrgency } = useRequest();
     const navigate = useNavigate()
@@ -186,6 +187,10 @@ function RequestHelp() {
     };
 
     const publishPost =  async ()=>{
+
+
+      setIsLoading(true);
+
       console.log({ problemStatement:description,
         email,
         problemUrgency:urgency,
@@ -209,6 +214,8 @@ function RequestHelp() {
         console.log(e);
         window.alert("Internal Server Error")
 
+      }finally{
+        setIsLoading(false);
       }
     }
 
@@ -293,7 +300,7 @@ function RequestHelp() {
 
           <Button onClick={publishPost} disableElevation sx={{
             textTransform: "capitalize"
-          }} fullWidth variant='contained' >Publish</Button>
+          }} fullWidth variant='contained' >{   isloading ? <CircularProgress color='inherit'/> : "Publish"}</Button>
           <Button onClick={()=>{setActiveScreen(1)}} fullWidth >Back</Button>
         </div>
 

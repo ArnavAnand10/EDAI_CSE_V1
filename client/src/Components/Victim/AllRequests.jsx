@@ -16,6 +16,8 @@ function AllRequests() {
 
     const [requests, setRequests] = useState([])
     const [isLoading, setIsLoading] = useState(false);
+    const [isCloseLoading,setIsCloseLoading] = useState(false);
+    const [statusType,setStatusType] = useState("open");
 
 
     useEffect(() => {
@@ -35,7 +37,7 @@ function AllRequests() {
 
             try {
 
-                const response = await axios.get(url + `/get-victim-history?email=${localStorage.getItem("victimLoginEmail")}`);
+                const response = await axios.get(url + `/get-victim-history?email=${localStorage.getItem("victimLoginEmail")}&&status=${statusType}`);
                 setRequests(response.data.problemStatements);
               
                 
@@ -52,7 +54,28 @@ function AllRequests() {
 
         getVictimPosts()
 
-    }, [])
+    }, [statusType])
+
+
+    const closeProblem = async (id)=>{
+
+
+        setIsCloseLoading(true);
+
+        try{
+                const response = await axios.post(url + "close-problem",{
+                    _id:id
+                })
+                window.location.reload();
+            }catch(e){
+            window.alert("Error Closing Your Problem Statement !");
+            console.log(e);
+            
+        }finally{
+            setIsCloseLoading(false);
+        }
+
+    }
 
 
     return (
@@ -62,15 +85,25 @@ function AllRequests() {
             background: 'rgb(238,174,202)',
             background: 'radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%)',
             width: '100%',
-            minHeigh: '100vh'
+            minHeight: '100vh'
         }} >
 
             <VictimHeader />
+
+            <div className='px-5 py-3 flex flex-row bg-white mx-5 my-3 rounded-lg'>
+                <p className='text-xl font-medium'> Problem Status </p>
+                <div>
+                    <Button onClick={()=>setStatusType("open")}> <p className={statusType=="open" && "font-medium"}>Open</p> </Button>
+                    <Button onClick={()=>setStatusType("closed")}>Closed</Button>
+                </div>
+            </div>
 
             <div className='flex flex-col p-5 gap-2'>
 
 
                 {isLoading ? <LinearProgress /> :
+
+                requests.length>0 ?
 
                     requests.map((req) => {
 
@@ -132,12 +165,14 @@ function AllRequests() {
 
                                 <div className='flex flex-row justify-between'>
                                     <p className='font-medium text-lg'>Dated: {req.createdAt} </p>
-                                    <Button>Close Problem</Button>
+                                    {statusType !="closed" && <Button onClick={()=>closeProblem(req._id)}>Close Problem</Button>}
                                 </div>
 
                             </div>
                         )
                     })
+                    :
+                   <p className='bg-white p-3 rounded-lg'> Currently there are no {statusType} problem statements</p>
 
                 }
 

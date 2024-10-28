@@ -13,7 +13,7 @@ const formatDateToIndia = (isoDate) => {
   };
 
 const PostsCards = ({props})=>{
-
+    
     props.createdAt = formatDateToIndia(props.createdAt);
 
     return (
