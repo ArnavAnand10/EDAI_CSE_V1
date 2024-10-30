@@ -106,6 +106,29 @@ const VolunteerScreen = () => {
 
   }, [])
 
+  const handleUrgencySort = async (e,type)=>{
+   
+    setPostLoading(true);
+    const filter = e.target.value=='low-to-high' ?  e.target.value.substring(0,3) : e.target.value.substring(0,4) ;
+    console.log(filter);
+try{
+    const response = await axios.get(url+`/sort-posts?sortBy=${type}&filter=${filter}`);
+    setAllPosts(response.data.allPosts);
+    console.log(response.data.allPosts);
+}
+catch(e){
+  console.log('error in fetching sorted posts', e);
+
+}finally{
+  setPostLoading(false);
+}
+    
+
+
+    
+    
+  }
+
   return <div
     style={{
       background: 'rgb(238,174,202)',
@@ -290,16 +313,25 @@ const VolunteerScreen = () => {
                 Sort By Urgency
               </p>
               <Select
-                label="Urgency"
-               
-              >
-                <MenuItem value={"high-to-low"}>High To Low</MenuItem>
-                <MenuItem value={"low-to-high"}>Low To High</MenuItem>
-              </Select>
+  onChange={(e) => handleUrgencySort(e,"Urgency")} // Use onChange to get the selected value
+  label="Urgency"
+>
+  <MenuItem value={"high-to-low"}>High To Low</MenuItem>
+  <MenuItem value={"low-to-high"}>Low To High</MenuItem>
+</Select>
             </div>
-            <p className='text-lg font-medium'>
-              Sort By Severity
-            </p>
+            <div className='flex gap-3 flex-col'>
+              <p className='text-lg font-medium'>
+                Sort By Severity
+              </p>
+              <Select
+  onChange={(e) => handleUrgencySort(e,'severity')} // Use onChange to get the selected value
+  label="Urgency"
+>
+  <MenuItem value={"high-to-low"}>High To Low</MenuItem>
+  <MenuItem value={"low-to-high"}>Low To High</MenuItem>
+</Select>
+            </div>
 
 
             <p className='text-lg font-medium'>
