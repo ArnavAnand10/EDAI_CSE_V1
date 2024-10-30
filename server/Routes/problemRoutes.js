@@ -9,6 +9,8 @@ const publishPost = require("../controllers/publishPost");
 const getPosts = require("../controllers/getPosts");
 const getVictimPostsForHistory = require("../controllers/getVictimPostsForHistory");
 const closeProblem = require("../controllers/deleteVictimPost");
+const getAllCategories = require("../controllers/getAllCategories");
+const getProblemByCategory = require("../controllers/getProblemByCategory");
 dotenv.config();
 
 router.post("/gemini-model", async (req, res) => {
@@ -83,4 +85,84 @@ router.post("/publish-post", publishPost);
 router.get("/get-posts",getPosts);
 router.get("/get-victim-history",getVictimPostsForHistory)
 router.post("/close-problem",closeProblem)
+
+// sort functionality
+
+router.get("/sort-posts", async (req,res)=>{
+ const {sortBy, filter} = req.query;
+ console.log(sortBy,filter);
+ 
+ try{
+  const allPosts = await  ProblemModel.find();
+  
+  const sortedArr = getFilteredData(sortBy,filter,allPosts);
+
+
+
+  res.status(200).json({allPosts: sortedArr});
+
+   
+}
+
+  catch(e){
+      console.log('error in fetching all posts:',e);
+      res.status(400).json({error: 'Internal Server Error'});
+  }
+  
+})
+
+
+function getFilteredData(sortBy, filter, allPosts) {
+  let highCount = 0;
+  let lowCount = 0;
+  let middleCount = 0;
+
+  sortBy = sortBy === 'Urgency' ? 'priority' : sortBy;
+  // Count the occurrences based on the dynamic `sortBy` key
+  allPosts.forEach(element => {
+    console.log(element[sortBy]);
+
+
+
+    if (element[sortBy] === 'High') {
+      highCount++;
+    } else if (element[sortBy] === 'Medium') {
+      middleCount++;
+    } else if (element[sortBy] === 'Low') {
+      lowCount++;
+    }
+  });
+
+  // Create an array with enough space for all elements
+  let sortedArray = new Array(highCount + middleCount + lowCount);
+
+  // Initialize indices for each priority level
+  let i = 0;
+  let j = highCount;
+  let k = highCount + middleCount;
+
+  // Populate sortedArray based on the dynamic `sortBy` key
+  allPosts.forEach(element => {
+    if (element[sortBy] === 'High') {
+      sortedArray[i++] = element;
+    } else if (element[sortBy] === 'Medium') {
+      sortedArray[j++] = element;
+    } else if (element[sortBy] === 'Low') {
+      sortedArray[k++] = element;
+    }
+  });
+
+  // Apply the filter to determine order of return
+  return filter === 'high' ? sortedArray : sortedArray.reverse();
+}
+
+
+
+
+// all categories
+
+router.post("/get-categories",getAllCategories);
+
+router.post("/get-query-posts-by-category",getProblemByCategory);
+
 module.exports = router;

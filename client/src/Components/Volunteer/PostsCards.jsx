@@ -7,14 +7,10 @@ import TurnedInNotIcon from '@mui/icons-material/TurnedInNot';
 import AddCommentIcon from '@mui/icons-material/AddComment';
 
 
-const formatDateToIndia = (isoDate) => {
-    const date = new Date(isoDate);
-    return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
-  };
+
 
 const PostsCards = ({props})=>{
     
-    props.createdAt = formatDateToIndia(props.createdAt);
 
     return (
 

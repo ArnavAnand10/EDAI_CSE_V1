@@ -1,7 +1,7 @@
 
 import Avatar from '@mui/material/Avatar'
 import '../../App.css';
-import { Button, CircularProgress, IconButton, Input, InputLabel, MenuItem, Select } from '@mui/material';
+import { Grid,Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Input, InputLabel, MenuItem, Modal, Select } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
-  console.log(lat1, lon1, lat2, lon2);
 
 
   // The math module contains a function
@@ -43,15 +42,23 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return (c * r).toFixed(2);  // Distance in kilometers
 };
 
+const formatDateToIndia = (dateString) => {
 
+  const date = new Date(dateString);
+  const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours and 30 minutes in milliseconds
+  const istDate = new Date(date.getTime() + istOffset);
+
+  // Get the day, month, and year
+  const day = String(istDate.getDate()).padStart(2, '0'); // Pad single digits with a leading zero
+  const month = String(istDate.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+  const year = istDate.getFullYear();
+
+  return `${day}/${month}/${year}`;
+
+};
 
 const VolunteerScreen = () => {
 
-  const [allPosts, setAllPosts] = useState([]);
-  const [userLocation, setUserLocation] = useState(null);
-  const navigate = useNavigate();
-
-  const [postLoading, setPostLoading] = useState(false);
   useEffect(() => {
 
 
@@ -93,8 +100,11 @@ const VolunteerScreen = () => {
       setPostLoading(true);
       try {
         const response = await axios.get(url + '/get-posts');
+        const categoryResponse = await axios.post(url + '/get-categories')
+        setAllCategories(categoryResponse.data);
+        console.log("Categories" ,categoryResponse.data);
+        
         setAllPosts(response.data.allPosts);
-        console.log(response.data.allPosts);
       }
       catch (e) {
         console.log('error in fetching all posts', e);
@@ -106,6 +116,109 @@ const VolunteerScreen = () => {
 
   }, [])
 
+  const [allCategories, setAllCategories] = useState([]);
+  const [allPosts, setAllPosts] = useState([]);
+  const [userLocation, setUserLocation] = useState(null);
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const [postLoading, setPostLoading] = useState(false);
+  
+
+  const handleUrgencySort = async (e, type) => {
+
+    setPostLoading(true);
+    const filter = e.target.value == 'low-to-high' ? e.target.value.substring(0, 3) : e.target.value.substring(0, 4);
+    console.log(filter);
+    try {
+      const response = await axios.get(url + `/sort-posts?sortBy=${type}&filter=${filter}`);
+      setAllPosts(response.data.allPosts);
+      console.log(response.data.allPosts);
+    }
+    catch (e) {
+      console.log('error in fetching sorted posts', e);
+
+    } finally {
+      setPostLoading(false);
+    }
+
+
+
+
+
+  }
+
+
+  const handleDistanceSort = async (e, type) => {
+    setPostLoading(true); // Set loading state to true
+
+    // Determine the filter type based on the selected option
+    const filter = e.target.value === 'low-to-high' ? 'low' : 'high';
+    console.log(filter);
+
+    // Create a new array to avoid mutating the original one
+    const sortedPosts = [...allPosts].sort((a, b) => {
+      if (filter === 'low') {
+        return a.distance - b.distance; // Ascending order
+      } else {
+        return b.distance - a.distance; // Descending order
+      }
+    });
+
+    console.log(sortedPosts);
+
+    setAllPosts(sortedPosts); // Update state with the new sorted array
+    setPostLoading(false); // Set loading state to false after sorting
+  };
+
+  const handleCheckboxChange = (category) => {
+    setSelectedCategories((prevSelected) => {
+      // Check if the category is already selected
+      if (prevSelected.includes(category)) {
+        // If it's checked, remove it from the selected categories
+        return prevSelected.filter((cat) => cat !== category);
+      } else {
+        // If it's unchecked, add it to the selected categories
+        return [...prevSelected, category];
+      }
+    });
+  };
+
+  const handleCategoryApply = async ()=>{
+    console.log(selectedCategories);
+
+
+    if(!selectedCategories){
+      window.alert("Please Select Atleast one Category");
+      return;
+    }
+
+    try{
+      const response = await axios.post(url + "get-query-posts-by-category",{
+        query:selectedCategories,
+      });
+      setAllPosts(response.data);
+      
+      
+
+    }catch(e){
+      console.log(e);
+      
+    }
+    finally{
+      setOpen(false);
+      setSelectedCategories([])
+    }
+    
+  }
+
+
   return <div
     style={{
       background: 'rgb(238,174,202)',
@@ -115,6 +228,42 @@ const VolunteerScreen = () => {
     }}
 
     className='victim-post pb-8   overflow-y-hidden'  >
+
+
+
+    {/* Modal */}
+
+    <Modal
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+    >
+      <div className='flex flex-col h-full  justify-center items-center '>
+        <div className='bg-white   mx-20 p-10 rounded-lg'>
+          <h1 className=' text-center text-2xl font-medium my-5'>Apply Categories</h1>
+          <Grid container spacing={2}>
+          {allCategories.map((cat) => (
+            <Grid item xs={12} sm={6} md={3} key={cat.category}>
+              <FormControlLabel defaultChecked={false}
+              control={
+                <Checkbox
+                  checked={selectedCategories.includes(cat._id)}
+                  onChange={() => handleCheckboxChange(cat._id)} // Call the function on change
+                />
+              }
+                label={`${cat.category} (${cat.count})`}
+              />
+            </Grid>
+          ))}
+        </Grid>
+        <div className='flex flex-col gap-3 mt-8'>
+         <Button variant='contained' disableElevation fullWidth onClick={handleCategoryApply}>Apply</Button>
+         <Button variant='outlined' fullWidth onClick={()=>setOpen(false)}>Close</Button>
+         </div>
+      </div>
+     </div>
+    </Modal>
 
 
 
@@ -290,25 +439,49 @@ const VolunteerScreen = () => {
                 Sort By Urgency
               </p>
               <Select
+                onChange={(e) => handleUrgencySort(e, "Urgency")} // Use onChange to get the selected value
                 label="Urgency"
-                
               >
                 <MenuItem value={"high-to-low"}>High To Low</MenuItem>
                 <MenuItem value={"low-to-high"}>Low To High</MenuItem>
               </Select>
             </div>
-            <p className='text-lg font-medium'>
-              Sort By Severity
-            </p>
+            <div className='flex gap-3 flex-col'>
+              <p className='text-lg font-medium'>
+                Sort By Severity
+              </p>
+              <Select
+                onChange={(e) => handleUrgencySort(e, 'severity')} // Use onChange to get the selected value
+                label="Urgency"
+              >
+                <MenuItem value={"high-to-low"}>High To Low</MenuItem>
+                <MenuItem value={"low-to-high"}>Low To High</MenuItem>
+              </Select>
+            </div>
 
 
-            <p className='text-lg font-medium'>
-              Sort By Distance
-            </p>
+            <div className='flex gap-3 flex-col'>
+              <p className='text-lg font-medium'>
+                Sort By Distance
+              </p>
+              <Select
+                onChange={(e) => handleDistanceSort(e, 'severity')} // Use onChange to get the selected value
+                label="Distance"
+              >
+                <MenuItem value={"high-to-low"}>High To Low</MenuItem>
+                <MenuItem value={"low-to-high"}>Low To High</MenuItem>
+              </Select>
+            </div>
 
+
+            <div className='flex gap-3 justify-center items-center flex-col'>
             <p className='text-lg font-medium'>
               Select Categories
             </p>
+             <Button onClick={()=>setOpen(!open)} variant='outlined'>Select Categories</Button>
+            </div>
+
+          
 
 
           </div>
@@ -321,6 +494,11 @@ const VolunteerScreen = () => {
           {allPosts && userLocation && allPosts.map((post) => {
 
             post.distance = calculateDistance(userLocation.latitude, userLocation.longitude, post.geoLocation[0], post.geoLocation[1])
+
+            if (post.createdAt.length > 11) {
+              post.createdAt = formatDateToIndia(post.createdAt);
+            }
+
 
             return (
               <PostsCards props={post} />)
