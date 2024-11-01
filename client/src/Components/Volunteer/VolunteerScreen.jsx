@@ -1,7 +1,7 @@
 
 import Avatar from '@mui/material/Avatar'
 import '../../App.css';
-import { Grid,Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Input, InputLabel, MenuItem, Modal, Select } from '@mui/material';
+import { Grid, Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Input, InputLabel, MenuItem, Modal, Select } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
@@ -99,11 +99,11 @@ const VolunteerScreen = () => {
     const fetchAllPosts = async () => {
       setPostLoading(true);
       try {
-        const response = await axios.get(url + '/get-posts');
-        const categoryResponse = await axios.post(url + '/get-categories')
+        const response = await axios.get(url + `get-posts?email=${localStorage.getItem("volunteerLoginEmail")}`);
+        const categoryResponse = await axios.post(url + 'get-categories')
         setAllCategories(categoryResponse.data);
-        console.log("Categories" ,categoryResponse.data);
-        
+        console.log("Categories", categoryResponse.data);
+
         setAllPosts(response.data.allPosts);
       }
       catch (e) {
@@ -129,7 +129,7 @@ const VolunteerScreen = () => {
   const handleClose = () => setOpen(false);
 
   const [postLoading, setPostLoading] = useState(false);
-  
+
 
   const handleUrgencySort = async (e, type) => {
 
@@ -137,7 +137,7 @@ const VolunteerScreen = () => {
     const filter = e.target.value == 'low-to-high' ? e.target.value.substring(0, 3) : e.target.value.substring(0, 4);
     console.log(filter);
     try {
-      const response = await axios.get(url + `/sort-posts?sortBy=${type}&filter=${filter}`);
+      const response = await axios.get(url + `sort-posts?sortBy=${type}&filter=${filter}&email=${localStorage.getItem("volunteerLoginEmail")}`);
       setAllPosts(response.data.allPosts);
       console.log(response.data.allPosts);
     }
@@ -190,33 +190,36 @@ const VolunteerScreen = () => {
     });
   };
 
-  const handleCategoryApply = async ()=>{
+  const handleCategoryApply = async () => {
     console.log(selectedCategories);
 
 
-    if(!selectedCategories){
+    if (!selectedCategories) {
       window.alert("Please Select Atleast one Category");
       return;
     }
 
-    try{
-      const response = await axios.post(url + "get-query-posts-by-category",{
-        query:selectedCategories,
+    try {
+      const response = await axios.post(url + "get-query-posts-by-category", {
+        query: selectedCategories,
+        email:localStorage.getItem("volunteerLoginEmail")
       });
       setAllPosts(response.data);
-      
-      
 
-    }catch(e){
+
+
+    } catch (e) {
       console.log(e);
-      
+
     }
-    finally{
+    finally {
       setOpen(false);
       setSelectedCategories([])
     }
-    
+
   }
+
+
 
 
   return <div
@@ -243,26 +246,26 @@ const VolunteerScreen = () => {
         <div className='bg-white   mx-20 p-10 rounded-lg'>
           <h1 className=' text-center text-2xl font-medium my-5'>Apply Categories</h1>
           <Grid container spacing={2}>
-          {allCategories.map((cat) => (
-            <Grid item xs={12} sm={6} md={3} key={cat.category}>
-              <FormControlLabel defaultChecked={false}
-              control={
-                <Checkbox
-                  checked={selectedCategories.includes(cat._id)}
-                  onChange={() => handleCheckboxChange(cat._id)} // Call the function on change
+            {allCategories.map((cat) => (
+              <Grid item xs={12} sm={6} md={3} key={cat.category}>
+                <FormControlLabel defaultChecked={false}
+                  control={
+                    <Checkbox
+                      checked={selectedCategories.includes(cat._id)}
+                      onChange={() => handleCheckboxChange(cat._id)} // Call the function on change
+                    />
+                  }
+                  label={`${cat.category} (${cat.count})`}
                 />
-              }
-                label={`${cat.category} (${cat.count})`}
-              />
-            </Grid>
-          ))}
-        </Grid>
-        <div className='flex flex-col gap-3 mt-8'>
-         <Button variant='contained' disableElevation fullWidth onClick={handleCategoryApply}>Apply</Button>
-         <Button variant='outlined' fullWidth onClick={()=>setOpen(false)}>Close</Button>
-         </div>
+              </Grid>
+            ))}
+          </Grid>
+          <div className='flex flex-col gap-3 mt-8'>
+            <Button variant='contained' disableElevation fullWidth onClick={handleCategoryApply}>Apply</Button>
+            <Button variant='outlined' fullWidth onClick={() => setOpen(false)}>Close</Button>
+          </div>
+        </div>
       </div>
-     </div>
     </Modal>
 
 
@@ -314,6 +317,10 @@ const VolunteerScreen = () => {
           </Button>
 
           <Button
+          
+          onClick={()=>{
+            navigate("/history")
+          }}
             fullWidth
             size='small'
             variant="outlined"
@@ -330,7 +337,7 @@ const VolunteerScreen = () => {
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
             }}
           >
-            Edit Profile
+           History
           </Button>
 
           <Button
@@ -475,13 +482,13 @@ const VolunteerScreen = () => {
 
 
             <div className='flex gap-3 justify-center items-center flex-col'>
-            <p className='text-lg font-medium'>
-              Select Categories
-            </p>
-             <Button onClick={()=>setOpen(!open)} variant='outlined'>Select Categories</Button>
+              <p className='text-lg font-medium'>
+                Select Categories
+              </p>
+              <Button onClick={() => setOpen(!open)} variant='outlined'>Select Categories</Button>
             </div>
 
-          
+
 
 
           </div>
@@ -491,7 +498,7 @@ const VolunteerScreen = () => {
         {postLoading ? <CircularProgress /> : <div className="posts-area flex-grow p-3 basis-full flex-col rounded-md overflow-y-scroll space-y-5    scrollbar-hide">
 
           {/* Post Component */}
-          {allPosts && userLocation && allPosts.map((post) => {
+          {(allPosts.length>0 && userLocation ) ? allPosts.map((post) => {
 
             post.distance = calculateDistance(userLocation.latitude, userLocation.longitude, post.geoLocation[0], post.geoLocation[1])
 
@@ -502,10 +509,15 @@ const VolunteerScreen = () => {
 
             return (
               <PostsCards props={post} />)
-          })}
+          })
+          
+          :
+          <p className='p-2 bg-white text-center rounded-lg'>Currently There are not any recent problems</p>
+          }
 
 
-        </div>}
+        </div>
+        }
 
       </div>
 

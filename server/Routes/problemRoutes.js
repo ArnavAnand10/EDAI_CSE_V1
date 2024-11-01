@@ -11,6 +11,8 @@ const getVictimPostsForHistory = require("../controllers/getVictimPostsForHistor
 const closeProblem = require("../controllers/deleteVictimPost");
 const getAllCategories = require("../controllers/getAllCategories");
 const getProblemByCategory = require("../controllers/getProblemByCategory");
+const VolunteerProblem = require("../controllers/VolunteerProblem");
+const fetchVolunteerHistory = require("../controllers/FetchVolunteerHistory");
 dotenv.config();
 
 router.post("/gemini-model", async (req, res) => {
@@ -88,28 +90,32 @@ router.post("/close-problem",closeProblem)
 
 // sort functionality
 
-router.get("/sort-posts", async (req,res)=>{
- const {sortBy, filter} = req.query;
- console.log(sortBy,filter);
- 
- try{
-  const allPosts = await  ProblemModel.find();
-  
-  const sortedArr = getFilteredData(sortBy,filter,allPosts);
+router.get("/sort-posts", async (req, res) => {
+  const { sortBy, filter, email } = req.query;
+  console.log(sortBy, filter);
 
+  try {
+    // Fetch all posts and populate the `volunteersAssigned` field to access volunteer emails
+    const allPosts = await ProblemModel.find().populate({
+      path: 'volunteersAssigned',
+      select: 'email' // Only get the email field of assigned volunteers
+    });
 
+    // Filter out posts where a volunteer's email matches the provided email
+    const filteredPosts = allPosts.filter(post => 
+      !post.volunteersAssigned.some(volunteer => volunteer.email === email)
+    );
 
-  res.status(200).json({allPosts: sortedArr});
+    // Apply sorting and filtering criteria on the filtered posts
+    const sortedArr = getFilteredData(sortBy, filter, filteredPosts);
 
-   
-}
-
-  catch(e){
-      console.log('error in fetching all posts:',e);
-      res.status(400).json({error: 'Internal Server Error'});
+    res.status(200).json({ allPosts: sortedArr });
+  } catch (e) {
+    console.log('error in fetching all posts:', e);
+    res.status(400).json({ error: 'Internal Server Error' });
   }
-  
-})
+});
+
 
 
 function getFilteredData(sortBy, filter, allPosts) {
@@ -164,5 +170,12 @@ function getFilteredData(sortBy, filter, allPosts) {
 router.post("/get-categories",getAllCategories);
 
 router.post("/get-query-posts-by-category",getProblemByCategory);
+
+// volunteer for a problem
+router.post("/volunteer-problem",VolunteerProblem)
+
+// volunterr history
+
+router.get("/fetch-volunteer-history",fetchVolunteerHistory)
 
 module.exports = router;

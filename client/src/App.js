@@ -9,6 +9,7 @@ import AllRequests from "./Components/Victim/AllRequests";
 import VolunteerRegister from "./Components/Volunteer/VolunteerRegister";
 import VolunteerLogin from "./Components/Volunteer/VolunteerLogin";
 import Home from "./Components/Home/Home";
+import History from "./Components/Volunteer/History";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route element={<VictimRegister />} path="/victim-register" />
         <Route element={<VictimLogin />} path="/victim-login" />
         <Route element={<VolunteerScreen />} path="/volunteer" />
+        <Route element={<History />} path="/history" />
         <Route element={<AllRequests />} path="/victim-requests" />
 
         {/* volunteer register */}

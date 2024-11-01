@@ -16,14 +16,13 @@ const volunteerSchema = new mongoose.Schema({
     status: { type: String, default: 'available' },
     lastActive: { type: Date, default: Date.now }
   },
-  historicalData: [{
-    problemId: {
+  historicalData: [
+    {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Problem'
     },
-    engagementStatus: { type: String },
-    timestamp: { type: Date, default: Date.now }
-  }],
+   
+  ],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

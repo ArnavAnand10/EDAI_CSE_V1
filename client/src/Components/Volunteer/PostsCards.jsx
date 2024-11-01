@@ -5,11 +5,35 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
 import TurnedInNotIcon from '@mui/icons-material/TurnedInNot';
 import AddCommentIcon from '@mui/icons-material/AddComment';
+import axios from "axios";
+import { useState } from "react";
+import url from "../../apiConfig";
+import { useNavigate } from "react-router";
 
 
 
 
 const PostsCards = ({props})=>{
+
+  const [isVolunteerProblemLoading, setIsVolunteerProblemLoading] = useState(false);
+  const navigate = useNavigate()
+
+
+  const handleVolunteerProblem = async (problemId, email) => {
+
+    try {
+      setIsVolunteerProblemLoading(true);
+      const response = await axios.post(url + "volunteer-problem", {
+        problemId,
+        email,
+      })
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsVolunteerProblemLoading(false);
+    }
+
+  }
     
 
     return (
@@ -112,6 +136,11 @@ const PostsCards = ({props})=>{
              </div>
            
                 <Button 
+
+               onClick={()=>{
+                handleVolunteerProblem(props._id,localStorage.getItem("volunteerLoginEmail"));
+                window.location.href = "/history";
+                             }} 
            variant="outlined" 
            size="small" 
            fullWidth

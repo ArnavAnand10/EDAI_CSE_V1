@@ -37,7 +37,7 @@ function AllRequests() {
 
             try {
 
-                const response = await axios.get(url + `/get-victim-history?email=${localStorage.getItem("victimLoginEmail")}&&status=${statusType}`);
+                const response = await axios.get(url + `get-victim-history?email=${localStorage.getItem("victimLoginEmail")}&&status=${statusType}`);
                 setRequests(response.data.problemStatements);
               
                 
